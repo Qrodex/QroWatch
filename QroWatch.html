@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>QroWatch</title>
+    <meta charset="UTF-8" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/futura-font@1.0.0/styles.min.css">
+    <style>
+        * {
+            font-family: 'FuturaBT-Medium';
+            color: white;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-size: cover;
+            background-position: center center;
+            user-select: none;
+            transition: all 0.5s ease;
+            background-repeat: no-repeat;
+            outline: none;
+        }
+
+        body {
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+        }
+
+        html {
+            background-color: black;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #wordInputBox {
+            display: block;
+            font-size: 50px;
+            font-weight: bold;
+            background: none;
+            padding: 25px 25px 10px 25px;
+            width: 100%;
+            text-transform: capitalize;
+            border: none;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        #metadataBox {
+            padding: 0px 25px 35px 25px;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        #metadataBox p {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .main {
+            width: 100vw;
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: fit-content;
+            float: left;
+            background: rgba(0, 0, 0, 0.85);
+            bottom: 0;
+            position: absolute;
+        }
+
+        button {
+            margin-left: 25px;
+            font-size: 25px;
+            height: 50px;
+            width: 50px;
+        }
+
+        header {
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.85);
+        }
+
+        header b,
+        .dropdown {
+            float: right;
+        }
+
+        img {
+            height: calc(100vh - 70px - 190px - 20px);
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        .dropdown {
+            position: absolute;
+            display: inline-block;
+            padding: 25px;
+            right: 0;
+            top: 0;
+        }
+
+        .dropbtn {
+            margin-bottom: 50px;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.85);
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            width: calc(100% - 50px);
+            border-radius: 5px;
+            right: 25px;
+
+            -webkit-animation-name: slideInDown;
+            animation-name: slideInDown;
+            -webkit-animation-duration: 0.5s;
+            animation-duration: 0.5s;
+            -webkit-animation-fill-mode: both;
+            animation-fill-mode: both;
+        }
+
+        #poster {
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .dropdown-content a {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: rgb(48, 48, 48, 0.85);
+            border-radius: 5px;
+        }
+
+        @keyframes slideInDown {
+            0% {
+                -webkit-transform: translateY(-50%);
+                transform: translateY(-50%);
+                opacity: 0;
+            }
+
+            100% {
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        QroWatch
+
+        <div class="dropdown">
+            <u class="dropbtn" id="moviename" onclick="toggleWatch()">Watch</u>
+            <div class="dropdown-content" id="watch" style="display: none;">
+                <a href="#" target="_blank" id="movlink">Vidsrc Movie</a>
+                <a href="#" target="_blank" id="serlink">Vidsrc Series</a>
+            </div>
+        </div>
+    </header>
+
+    <center>
+        <img id="poster">
+    </center>
+
+    <div class="main">
+        <input id="wordInputBox" />
+        <p id="metadataBox"></p>
+    </div>
+
+    <script>
+        function toggleWatch() {
+            var x = document.getElementById("watch");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+
+        function fetchMovie(inputword) {
+            const word = inputword;
+            const wordinput = document.getElementById("wordInputBox");
+            const metadataBox = document.getElementById("metadataBox");
+            const movlink = document.getElementById("movlink");
+            const posterelem = document.getElementById("poster");
+            const serlink = document.getElementById("serlink");
+            const moviename = document.getElementById("moviename");
+
+            fetch(`https://www.omdbapi.com/?apikey=91ba7d6f&t=${word}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    let title = data.Title + ` (${data.Year})`
+
+                    wordinput.value = title;
+                    metadataBox.innerHTML = `<b>${data.Released} | ${data.Genre} | ${data.Rated} | ${data.Runtime}</b>` + "<br><p>" + data.Plot + "</p>";
+                    document.documentElement.style.backgroundImage = `url("${data.Poster}")`
+                    posterelem.src = data.Poster
+                    moviename.innerText = 'Watch ' + title
+
+                    movlink.href = 'https://vidsrc.to/embed/movie/' + data.imdbID
+                    serlink.href = 'https://vidsrc.to/embed/tv/' + data.imdbID
+
+                    wordinput.focus()
+                    if (data.Response == 'False') {
+                        moviename.innerText = 'Watch'
+
+                        movlink.href = '#'
+                        serlink.href = '#'
+
+                        wordinput.value = 'Not found!'
+                        throw 'Not found'
+                    }
+                })
+                .catch((error) => metadataBox.innerHTML = `Cannot find the movie ${word}, Please try again!`);
+        }
+
+        fetchMovie("Who Killed Captain Alex?");
+
+        document
+            .getElementById("wordInputBox")
+            .addEventListener("change", function (event) {
+                const wordinput = document.getElementById("wordInputBox");
+                fetchMovie(wordinput.value);
+            });
+    </script>
+</body>
+
+</html>
